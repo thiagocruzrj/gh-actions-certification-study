@@ -35,10 +35,12 @@ jobs:
         run: npm install
 
       - name: Run tests
+        id: npm_test
         run: npm test
 
       - name: Archive test report
         uses: actions/upload-artifact@v4
+        if: steps.npm_test.outcome == 'success' || steps.npm_test.outcome == 'failure'
         with:
           name: Mocha-Test-Report-${{ matrix.operating-system }}-Node-${{ matrix.node-version }}
           path: test-results.xml
