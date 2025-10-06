@@ -38,8 +38,7 @@ jobs:
         run: npm test
 
       - name: Archive test report
-        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Mocha-Test-Report
+          name: Mocha-Test-Report-${{ matrix.operating-system }}-Node-${{ matrix.node-version }}
           path: test-results.xml
