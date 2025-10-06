@@ -6,6 +6,11 @@ on:
       - main
       - 'feat/*'
 
+env:
+  MONGO_URI: 'mongodb+srv://cluster0.9inhs2g.mongodb.net/superdata'
+  MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
+  MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+
 jobs:
   unit-testing:
     name: Unit Testing
