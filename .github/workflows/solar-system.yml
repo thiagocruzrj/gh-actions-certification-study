@@ -42,3 +42,29 @@ jobs:
         with:
           name: Mocha-Test-Report-${{ matrix.operating-system }}-Node-${{ matrix.node-version }}
           path: test-results.xml
+    
+  code-coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    needs: unit-testing
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js - 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run code coverage
+        run: npm run coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: Code-coverage-report
+          path: coverage
+          retention-days: 5
