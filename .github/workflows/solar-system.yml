@@ -100,11 +100,11 @@ jobs:
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - name: Docker Build and Push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
-          context: .
-          push: false
-          tags: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+            push: false
+            tags: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+            file: Dockerfile
       
       - name: Docker Image Test
         run: |
