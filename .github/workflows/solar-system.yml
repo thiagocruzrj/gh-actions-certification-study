@@ -92,13 +92,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Azure login
-        uses: azure/login@v2
+        uses: azure/docker-login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
+          login-server: ${{ vars.REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
       - name: Docker Build and Push
         uses: docker/build-push-action@v4
         with:
           context: .
           push: false
-          tags: ${{ vars.ACR_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+          tags: ${{ vars.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
