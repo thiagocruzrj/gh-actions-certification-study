@@ -1,8 +1,7 @@
 {
   "name": "Solar System",
   "version": "6.7.6",
-  "author": "Siddharth Barahalikar <barahalikar.siddharth@gmail.com>",
-  "homepage": "https://www.linkedin.com/in/barahalikar-siddharth/",
+  "author": "Thiago Cruz <thagocruz@gmail.com>",
   "license": "MIT",
   "scripts": {
     "start": "node app.js",
