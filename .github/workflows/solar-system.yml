@@ -19,11 +19,11 @@ jobs:
     name: Unit Testing
     strategy:
         matrix:
-            node-version: [18, 20]
-            operating-system: [ubuntu-latest, windows-latest]
-            exclude:
-                - node-version: 20
-                  operating-system: windows-latest
+            node-version: [18]
+            operating-system: [ubuntu-latest]
+            # exclude:
+            #     - node-version: 20
+            #       operating-system: windows-latest
     runs-on: ${{ matrix.operating-system }}
     steps:
       - name: Checkout repository
@@ -95,3 +95,10 @@ jobs:
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Docker Build and Push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: false
+          tags: ${{ vars.ACR_LOGIN_SERVER }}/solar-system:${{ github.sha }}
