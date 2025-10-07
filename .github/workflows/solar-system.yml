@@ -8,6 +8,7 @@ on:
 
 env:
   MONGO_URI: 'mongodb+srv://cluster0.9inhs2g.mongodb.net/superdata'
+  REGISTRY_LOGIN_SERVER: ghacr-caagerfsb6dtg6e3.azurecr.io
   MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
   MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
@@ -94,7 +95,7 @@ jobs:
       - name: Azure login
         uses: azure/docker-login@v2
         with:
-          login-server: ${{ vars.REGISTRY_LOGIN_SERVER }}
+          login-server: ${{ env.REGISTRY_LOGIN_SERVER }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
@@ -103,7 +104,7 @@ jobs:
         with:
           context: .
           push: false
-          tags: ${{ vars.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+          tags: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
       
       - name: Docker Image Test
         run: |
@@ -112,7 +113,7 @@ jobs:
             -e MONGO_URI=${{ env.MONGO_URI }} \
             -e MONGO_USERNAME=${{ env.MONGO_USERNAME }} \
             -e MONGO_PASSWORD=${{ env.MONGO_PASSWORD }} \
-            ${{ vars.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+            ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
 
           echo "Testing Image URL using wget"
           wget -q -O - 127.0.0.1:3000/live | grep live
