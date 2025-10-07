@@ -11,6 +11,9 @@ env:
   MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
   MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
+permissions:
+  id-token: write
+  contents: read
 jobs:
   unit-testing:
     name: Unit Testing
@@ -19,8 +22,8 @@ jobs:
             node-version: [18, 20]
             operating-system: [ubuntu-latest, windows-latest]
             exclude:
-                - node-version: 18
-                  operating-system: ubuntu-latest
+                - node-version: 20
+                  operating-system: windows-latest
     runs-on: ${{ matrix.operating-system }}
     steps:
       - name: Checkout repository
