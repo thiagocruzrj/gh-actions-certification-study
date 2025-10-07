@@ -99,7 +99,7 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Docker Build and Push
+      - name: Docker Build for Testing
         uses: docker/build-push-action@v5
         with:
             push: false
