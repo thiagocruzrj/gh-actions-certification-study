@@ -176,12 +176,30 @@ jobs:
       
       - name: Fetch Kubernetes Cluster details
         run: |
-          kubectl version --short
-          echo --------------------------------------
           kubectl cluster-info
           echo --------------------------------------
           kubectl get nodes -o wide
       
+      - name: Save NGINX Ingress Controller IP as GH Env Variable
+        id: save-ingress-ip
+        run: |
+          echo "INGRESS_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_ENV
+
+      - name: Replace Tokens in Manifest files
+        uses: cschleiden/replace-tokens@v1
+        with:
+          tokenPrefix: '_{_'
+          tokenSuffix: '_}_'
+          files: '["kubernetes/deployment/*.yaml"]'
+        env:
+          NAMESPACE: ${{ vars.NAMESPACE }}
+          REPLICAS: ${{ vars.REPLICAS }}
+          IMAGE: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+          INGRESS_IP: ${{ env.INGRESS_IP }}
+
+      - name: Display Manifest files
+        run: |
+          cat kubernetes/deployment/*.yaml
       # - name: Deploy to AKS
       #   id: deploy-aks
       #   uses: Azure/k8s-deploy@v4
