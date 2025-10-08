@@ -72,7 +72,6 @@ jobs:
         MONGO_URI: 'mongodb://mongo:27017/superData'
         MONGO_USERNAME: non-prod-user
         MONGO_PASSWORD: non-prod-password
-    needs: unit-testing
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -153,3 +152,45 @@ jobs:
             tags: |
                 ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
                 ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
+  
+  dev-deploy:
+    needs: docker-build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install Kubectl CLI
+        uses: azure/setup-kubectl@v3
+
+      - name: Azure login
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      
+      - uses: azure/aks-set-context@v4
+        with:
+          resource-group: 'rg-gh-cert'
+          cluster-name: 'aks-gh-cert'
+      
+      - name: Fetch Kubernetes Cluster details
+        run: |
+          kubectl version --short
+          echo --------------------------------------
+          kubectl cluster-info
+          echo --------------------------------------
+          kubectl get nodes -o wide
+      
+      # - name: Deploy to AKS
+      #   id: deploy-aks
+      #   uses: Azure/k8s-deploy@v4
+      #   with:
+      #     namespace: 'solar-system'
+      #     manifests: |
+      #       kubernetes/deployment/deployment.yaml
+      #       kubernetes/deployment/service.yaml
+      #       kubernetes/deployment/ingress.yaml
+      #     images: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+      #     pull-images: false
