@@ -156,7 +156,9 @@ jobs:
   dev-deploy:
     needs: docker-build-and-push
     runs-on: ubuntu-latest
-    permissions: read-all
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
