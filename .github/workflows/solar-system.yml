@@ -156,24 +156,23 @@ jobs:
   dev-deploy:
     needs: docker-build-and-push
     runs-on: ubuntu-latest
+    permissions: read-all
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      - name: Install Kubectl CLI
-        uses: azure/setup-kubectl@v3
 
       - name: Azure login
-        uses: azure/docker-login@v2
+        uses: azure/login@v1
         with:
-          login-server: ${{ env.REGISTRY_LOGIN_SERVER }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
       
       - uses: azure/aks-set-context@v4
         with:
           resource-group: 'rg-gh-cert'
           cluster-name: 'aks-gh-cert'
+      
+      - name: Install Kubectl CLI
+        uses: azure/setup-kubectl@v3
       
       - name: Fetch Kubernetes Cluster details
         run: |
