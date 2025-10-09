@@ -138,7 +138,7 @@ jobs:
           docker run --name solar-system-app -d -p 3000:3000 \
             -e MONGO_URI=${{ env.MONGO_URI }} \
             -e MONGO_USERNAME=${{ env.MONGO_USERNAME }} \
-            -e MONGO_PASSWORD=${{ env.MONGO_PASSWORD }} \
+            -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
             ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
 
           echo "Testing Image URL using wget"
@@ -207,17 +207,24 @@ jobs:
           IMAGE: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
           INGRESS_IP: ${{ env.INGRESS_IP }}
 
-      - name: Display Manifest files
+      - name: Create MongoDB Secret in AKS
         run: |
-          cat kubernetes/deployment/*.yaml
-      # - name: Deploy to AKS
-      #   id: deploy-aks
-      #   uses: Azure/k8s-deploy@v4
-      #   with:
-      #     namespace: 'solar-system'
-      #     manifests: |
-      #       kubernetes/deployment/deployment.yaml
-      #       kubernetes/deployment/service.yaml
-      #       kubernetes/deployment/ingress.yaml
-      #     images: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
-      #     pull-images: false 
+          kubectl create namespace ${{ vars.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+          kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
+            --from-literal=mongo-uri='${{ env.MONGO_URI }}' \
+            --from-literal=mongo-username='${{ vars.MONGO_USERNAME }}' \
+            --from-literal=mongo-password='${{ secrets.MONGO_PASSWORD }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
+      
+      - name: Deploy to AKS
+        id: deploy-aks
+        uses: Azure/k8s-deploy@v5
+        with:
+          action: deploy
+          namespace: ${{ vars.NAMESPACE }}
+          manifests: |
+            kubernetes/deployment/deployment.yaml
+            kubernetes/deployment/service.yaml
+            kubernetes/deployment/ingress.yaml
+          images: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+          pull-images: false 
