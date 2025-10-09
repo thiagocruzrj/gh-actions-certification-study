@@ -220,4 +220,4 @@ jobs:
       #       kubernetes/deployment/service.yaml
       #       kubernetes/deployment/ingress.yaml
       #     images: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
-      #     pull-images: false
+      #     pull-images: false 
