@@ -154,6 +154,7 @@ jobs:
                 ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
   
   dev-deploy:
+    name: Dev Deploy
     needs: docker-build-and-push
     runs-on: ubuntu-latest
     environment: 
@@ -239,7 +240,7 @@ jobs:
         run: |
           echo "APP_INGRESS_HOST=$(kubectl -n ${{ vars.NAMESPACE }} get ingress -o jsonpath="{.items[0].spec.tls[0].hosts[0]}")" >> "$GITHUB_OUTPUT"
     
-  integration-testing:
+  dev-integration-testing:
     name: Dev Integration Testing
     needs: dev-deploy
     runs-on: ubuntu-latest
@@ -247,6 +248,100 @@ jobs:
       - name: Test URL Output
         env:
           APP_INGRESS_HOST: ${{ needs.dev-deploy.outputs.APP_INGRESS_HOST }}
+        run: |
+          echo "Application URL: http://${{ env.APP_INGRESS_HOST }}"
+          echo "--------------------------------------"
+          curl https://${{ env.APP_INGRESS_HOST }}/live -s -k | jq -r .status | grep -i live
+
+  prod-deploy:
+    name: Prod Deploy
+    needs: dev-integration-testing
+    runs-on: ubuntu-latest
+    environment: 
+      name: production
+      url: https://${{ steps.save-app-url.outputs.APP_INGRESS_HOST }}
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+    outputs:
+      APP_INGRESS_HOST: ${{ steps.save-app-url.outputs.APP_INGRESS_HOST }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Install Kubectl CLI
+        uses: azure/setup-kubectl@v3
+      
+      - name: Setup kubelogin
+        uses: azure/use-kubelogin@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - uses: azure/aks-set-context@v4
+        with:
+          resource-group: 'rg-gh-cert'
+          cluster-name: 'aks-gh-cert'
+          admin: 'false'
+          use-kubelogin: 'true'
+      
+      - name: Save NGINX Ingress Controller IP as GH Env Variable
+        id: save-ingress-ip
+        run: |
+          echo "INGRESS_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" >> $GITHUB_ENV
+
+      - name: Replace Tokens in Manifest files
+        uses: cschleiden/replace-tokens@v1
+        with:
+          tokenPrefix: '_{_'
+          tokenSuffix: '_}_'
+          files: '["kubernetes/production/*.yaml"]'
+        env:
+          NAMESPACE: ${{ vars.NAMESPACE }}
+          REPLICAS: ${{ vars.REPLICAS }}
+          IMAGE: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+          INGRESS_IP: ${{ env.INGRESS_IP }}
+
+      - name: Create MongoDB Secret in AKS
+        run: |
+          kubectl create namespace ${{ vars.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+          kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
+            --from-literal=mongo-uri='${{ env.MONGO_URI }}' \
+            --from-literal=mongo-username='${{ vars.MONGO_USERNAME }}' \
+            --from-literal=mongo-password='${{ secrets.MONGO_PASSWORD }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
+      
+      - name: Deploy Production to AKS
+        id: deploy-aks
+        uses: Azure/k8s-deploy@v5
+        with:
+          action: deploy
+          namespace: ${{ vars.NAMESPACE }}
+          manifests: |
+            kubernetes/production/deployment.yaml
+            kubernetes/production/service.yaml
+            kubernetes/production/ingress.yaml
+          images: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+          pull-images: false
+
+      - name: Set App Ingress Host URL as GH Env Variable
+        id: save-app-url
+        run: |
+          echo "APP_INGRESS_HOST=$(kubectl -n ${{ vars.NAMESPACE }} get ingress -o jsonpath="{.items[0].spec.tls[0].hosts[0]}")" >> "$GITHUB_OUTPUT"
+    
+  prod-integration-testing:
+    name: Prod Integration Testing
+    needs: prod-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test URL Output
+        env:
+          APP_INGRESS_HOST: ${{ needs.prod-deploy.outputs.APP_INGRESS_HOST }}
         run: |
           echo "Application URL: http://${{ env.APP_INGRESS_HOST }}"
           echo "--------------------------------------"
