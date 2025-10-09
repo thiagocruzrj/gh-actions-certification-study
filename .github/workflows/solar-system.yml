@@ -200,7 +200,7 @@ jobs:
         with:
           tokenPrefix: '_{_'
           tokenSuffix: '_}_'
-          files: '["kubernetes/deployment/*.yaml"]'
+          files: '["kubernetes/development/*.yaml"]'
         env:
           NAMESPACE: ${{ vars.NAMESPACE }}
           REPLICAS: ${{ vars.REPLICAS }}
@@ -223,8 +223,8 @@ jobs:
           action: deploy
           namespace: ${{ vars.NAMESPACE }}
           manifests: |
-            kubernetes/deployment/deployment.yaml
-            kubernetes/deployment/service.yaml
-            kubernetes/deployment/ingress.yaml
+            kubernetes/development/deployment.yaml
+            kubernetes/development/service.yaml
+            kubernetes/development/ingress.yaml
           images: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
           pull-images: false 
