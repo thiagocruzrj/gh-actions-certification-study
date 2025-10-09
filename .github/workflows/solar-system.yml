@@ -156,6 +156,9 @@ jobs:
   dev-deploy:
     needs: docker-build-and-push
     runs-on: ubuntu-latest
+    environment: 
+      name: development
+      url: https://${{ steps.save-app-url.outputs.APP_INGRESS_HOST }}
     permissions:
       id-token: write
       contents: read
