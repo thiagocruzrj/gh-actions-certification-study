@@ -160,6 +160,8 @@ jobs:
       id-token: write
       contents: read
       actions: read
+    outputs:
+      APP_INGRESS_HOST: ${{ steps.save-app-url.outputs.APP_INGRESS_HOST }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -227,4 +229,21 @@ jobs:
             kubernetes/development/service.yaml
             kubernetes/development/ingress.yaml
           images: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
-          pull-images: false 
+          pull-images: false
+
+      - name: Set App Ingress Host URL as GH Env Variable
+        id: save-app-url
+        run: |
+          echo "APP_INGRESS_HOST=$(kubectl -n ${{ vars.NAMESPACE }} get ingress -o jsonpath="{.items[0].spec.tls[0].hosts[0]}")" >> "$GITHUB_OUTPUT"
+    
+  integration-testing:
+    name: Dev Integration Testing
+    needs: dev-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test URL Output
+        env:
+          APP_INGRESS_HOST: ${{ needs.dev-deploy.outputs.APP_INGRESS_HOST }}
+        run: |
+          echo "Application URL: http://${{ env.APP_INGRESS_HOST }}/live"
+          wget -q -O - http://${{ env.APP_INGRESS_HOST }}/live | grep live
