@@ -180,7 +180,7 @@ jobs:
         with:
           resource-group: 'rg-gh-cert'
           cluster-name: 'aks-gh-cert'
-          admin: 'false'
+          admin: 'true'
           use-kubelogin: 'true'
 
       - name: Fetch Kubernetes Cluster details
