@@ -248,5 +248,6 @@ jobs:
         env:
           APP_INGRESS_HOST: ${{ needs.dev-deploy.outputs.APP_INGRESS_HOST }}
         run: |
-          echo "Application URL: http://${{ env.APP_INGRESS_HOST }}/live"
-          wget -q -O - http://${{ env.APP_INGRESS_HOST }}/live | grep live
+          echo "Application URL: http://${{ env.APP_INGRESS_HOST }}"
+          echo "--------------------------------------"
+          curl https://${{ env.APP_INGRESS_HOST }}/live -s -k | jq -r .status | grep -i live
