@@ -61,7 +61,7 @@ app.post('/planet',   function(req, res) {
         id: req.body.id
     }, function(err, planetData) {
         if (err) {
-            res.status(500).send("Error in Planet Data")
+            res.status(500).send("Database error while retrieving planet data")
         } else if (!planetData) {
             // Use mock data if database returns null
             const mockPlanet = mockPlanets.find(p => p.id === req.body.id);
