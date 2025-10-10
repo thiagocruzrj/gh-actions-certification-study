@@ -5,8 +5,6 @@ on:
     secrets:
       AZURE_CREDENTIALS:
         required: true
-      GITHUB_TOKEN:
-        required: true
       MONGO_PASSWORD:
         required: true
 
@@ -32,8 +30,6 @@ jobs:
         
           - name: Setup kubelogin
             uses: azure/use-kubelogin@v1
-            env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
           - uses: azure/aks-set-context@v4
             with:
