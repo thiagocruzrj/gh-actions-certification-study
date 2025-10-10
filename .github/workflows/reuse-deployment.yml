@@ -7,6 +7,8 @@ on:
         required: true
       MONGO_PASSWORD:
         required: true
+      GITHUB_TOKEN:
+        required: true
     inputs:
         MONGO_URI:
             required: false
@@ -44,7 +46,9 @@ jobs:
         
           - name: Setup kubelogin
             uses: azure/use-kubelogin@v1
-        
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
           - uses: azure/aks-set-context@v4
             with:
               resource-group: 'rg-gh-cert'

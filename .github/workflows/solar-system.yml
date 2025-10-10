@@ -162,6 +162,7 @@ jobs:
     secrets: 
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
       MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     with:
         MONGO_URI: ${{ vars.MONGO_URI }}
         REGISTRY_LOGIN_SERVER: ${{ vars.REGISTRY_LOGIN_SERVER }}
