@@ -8,8 +8,8 @@ on:
       - 'feat/*'
 
 env:
-  MONGO_URI: 'mongodb+srv://cluster0.9inhs2g.mongodb.net/superdata'
-  REGISTRY_LOGIN_SERVER: ghacr-caagerfsb6dtg6e3.azurecr.io
+  MONGO_URI: ${{ vars.MONGO_URI }}
+  REGISTRY_LOGIN_SERVER: ${{ vars.REGISTRY_LOGIN_SERVER }}
   MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
   MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
@@ -162,7 +162,11 @@ jobs:
     secrets: 
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
       MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
-    
+    with:
+        MONGO_URI: ${{ vars.MONGO_URI }}
+        REGISTRY_LOGIN_SERVER: ${{ vars.REGISTRY_LOGIN_SERVER }}
+        ENV: development
+
   dev-integration-testing:
     name: Dev Integration Testing
     if: contains(github.ref, 'feat/')
@@ -185,6 +189,10 @@ jobs:
     secrets: 
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
       MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+    with:
+        MONGO_URI: ${{ vars.MONGO_URI }}
+        REGISTRY_LOGIN_SERVER: ${{ vars.REGISTRY_LOGIN_SERVER }}
+        ENV: production
     
   prod-integration-testing:
     name: Prod Integration Testing
