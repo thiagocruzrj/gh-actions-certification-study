@@ -2,6 +2,13 @@ name: Deployment - Reusable Workflow
 
 on:
   workflow_call:
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
+      GITHUB_TOKEN:
+        required: true
+      MONGO_PASSWORD:
+        required: true
 
 jobs:
     reuse-deploy:

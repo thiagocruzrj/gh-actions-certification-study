@@ -159,6 +159,10 @@ jobs:
     if: contains(github.ref, 'feat/')
     needs: docker-build-and-push
     uses: ./.github/workflows/reuse-deployment.yml
+    secrets: 
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
     
   dev-integration-testing:
     name: Dev Integration Testing
