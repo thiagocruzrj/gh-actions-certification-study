@@ -7,8 +7,6 @@ on:
         required: true
       MONGO_PASSWORD:
         required: true
-      GITHUB_TOKEN:
-        required: true
     inputs:
         MONGO_URI:
             required: false
