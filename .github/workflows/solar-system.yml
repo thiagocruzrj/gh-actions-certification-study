@@ -166,16 +166,13 @@ jobs:
 
       - name: Docker Build for Testing
         uses: docker/build-push-action@v5
-        env:
-          REGISTRY_LOGIN_SERVER: ${{ env.REGISTRY_LOGIN_SERVER }}
         with:
             push: false
-            tags: $REGISTRY_LOGIN_SERVER/solar-system:${{ github.sha }}
+            tags: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
             file: Dockerfile
       
       - name: Docker Image Test
         env:
-          REGISTRY_LOGIN_SERVER: ${{ env.REGISTRY_LOGIN_SERVER }}
           MONGO_USERNAME: ${{ env.MONGO_USERNAME }}
           MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
         run: |
@@ -184,20 +181,18 @@ jobs:
             -e MONGO_URI=${{ env.MONGO_URI }} \
             -e MONGO_USERNAME=$MONGO_USERNAME \
             -e MONGO_PASSWORD=$MONGO_PASSWORD \
-            $REGISTRY_LOGIN_SERVER/solar-system:${{ github.sha }}
+            ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
 
           echo "Testing Image URL using wget"
           wget -q -O - 127.0.0.1:3000/live | grep live
 
       - name: Container Registry Push
         uses: docker/build-push-action@v5
-        env:
-          REGISTRY_LOGIN_SERVER: ${{ env.REGISTRY_LOGIN_SERVER }}
         with:
             push: true
             file: Dockerfile
             tags: |
-                $REGISTRY_LOGIN_SERVER/solar-system:${{ github.sha }}
+                ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
                 ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
   
   dev-deploy:
