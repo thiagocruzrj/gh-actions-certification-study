@@ -148,10 +148,6 @@ jobs:
     steps:
       - name: Azure login
         uses: azure/docker-login@v2
-        env:
-          REGISTRY_LOGIN_SERVER: ${{ env.REGISTRY_LOGIN_SERVER }}
-          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
-          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         with:
           # Use GitHub Actions expressions so the action receives the actual values
           login-server: ${{ env.REGISTRY_LOGIN_SERVER }}
