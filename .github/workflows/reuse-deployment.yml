@@ -21,6 +21,9 @@ on:
             required: true
             type: string
             default: ${{ vars.REGISTRY_LOGIN_SERVER }}
+    outputs:
+        APP_INGRESS_HOST:
+            value: ${{ jobs.reuse-deploy.outputs.APP_INGRESS_HOST }}
 
 jobs:
     reuse-deploy:
