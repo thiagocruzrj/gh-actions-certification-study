@@ -58,7 +58,7 @@ jobs:
       - name: Archive test report
         uses: actions/upload-artifact@v4
         with:
-          name: Mocha-Test-Report-${{ matrix.operating-system }}-Node-${{ matrix.node-version }}
+          name: Mocha-Test-Report
           path: test-results.xml
     
   code-coverage:
@@ -102,7 +102,41 @@ jobs:
           name: Code-Coverage-Report
           path: coverage
           retention-days: 5
+  
+  report-storage-account:
+    name: Azure SA - Upload Reports
+    needs: [unit-testing, code-coverage]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Unit Test Report
+        uses: actions/download-artifact@v4
+        with:
+          name: Mocha-Test-Report
 
+      - name: Download Code Coverage Report
+        uses: actions/download-artifact@v4
+        with:
+          name: Code-Coverage-Report
+
+      - name: Merge Reports
+        run: |
+          ls -ltr
+          mkdir reports-${{ github.sha }}
+          mv cobertura-coverage.xml reports-${{ github.sha }}/
+          mv test-results.xml reports-${{ github.sha }}/
+          ls -ltr reports-${{ github.sha }}
+      
+      - name: Upload Reports to Azure Storage Account
+        uses: azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload-batch \
+              --account-name ${{ vars.STORAGE_ACCOUNT_NAME }} \
+              --destination '$web/reports/${{ github.sha }}' \
+              --source reports-${{ github.sha }} \
+              --pattern *.xml
+        env:
+          AZURE_STORAGE_KEY: ${{ secrets.STORAGE_ACCOUNT_KEY }}
   docker-build-and-push:
     name: Docker Build and Push to ACR
     needs: [unit-testing, code-coverage]
