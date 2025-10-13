@@ -58,7 +58,7 @@ jobs:
       - name: Archive test report
         uses: actions/upload-artifact@v4
         with:
-          name: Mocha-Test-Report-${{ matrix.operating-system }}-Node-${{ matrix.node-version }}
+          name: Mocha-Test-Report
           path: test-results.xml
     
   code-coverage:
@@ -111,7 +111,7 @@ jobs:
       - name: Download Unit Test Report
         uses: actions/download-artifact@v4
         with:
-          name: Mocha-Test-Report-${{ matrix.operating-system }}-Node-${{ matrix.node-version }}
+          name: Mocha-Test-Report
 
       - name: Download Code Coverage Report
         uses: actions/download-artifact@v4
