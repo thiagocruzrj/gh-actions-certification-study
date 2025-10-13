@@ -1,7 +1,7 @@
 # Solar System NodeJS Application
 
 A simple HTML+MongoDB+NodeJS project to display Solar System and it's planets.
-
+[![Solar System Workflow](https://github.com/thiagocruzrj/gh-actions-certification-study/actions/workflows/solar-system.yml/badge.svg)](https://github.com/thiagocruzrj/gh-actions-certification-study/actions/workflows/solar-system.yml)
 ---
 ## Requirements
 
