@@ -11,7 +11,6 @@ env:
   MONGO_URI: ${{ vars.MONGO_URI }}
   REGISTRY_LOGIN_SERVER: ${{ vars.REGISTRY_LOGIN_SERVER }}
   MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
-  MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
 jobs:
   unit-testing:
@@ -167,13 +166,16 @@ jobs:
 
       - name: Docker Build for Testing
         uses: docker/build-push-action@v5
+        env:
+          REGISTRY_LOGIN_SERVER: ${{ env.REGISTRY_LOGIN_SERVER }}
         with:
             push: false
-            tags: ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+            tags: $REGISTRY_LOGIN_SERVER/solar-system:${{ github.sha }}
             file: Dockerfile
       
       - name: Docker Image Test
         env:
+          REGISTRY_LOGIN_SERVER: ${{ env.REGISTRY_LOGIN_SERVER }}
           MONGO_USERNAME: ${{ env.MONGO_USERNAME }}
           MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
         run: |
@@ -182,18 +184,20 @@ jobs:
             -e MONGO_URI=${{ env.MONGO_URI }} \
             -e MONGO_USERNAME=$MONGO_USERNAME \
             -e MONGO_PASSWORD=$MONGO_PASSWORD \
-            ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+            $REGISTRY_LOGIN_SERVER/solar-system:${{ github.sha }}
 
           echo "Testing Image URL using wget"
           wget -q -O - 127.0.0.1:3000/live | grep live
 
       - name: Container Registry Push
         uses: docker/build-push-action@v5
+        env:
+          REGISTRY_LOGIN_SERVER: ${{ env.REGISTRY_LOGIN_SERVER }}
         with:
             push: true
             file: Dockerfile
             tags: |
-                ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
+                $REGISTRY_LOGIN_SERVER/solar-system:${{ github.sha }}
                 ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
   
   dev-deploy:
@@ -219,9 +223,9 @@ jobs:
         env:
           APP_INGRESS_HOST: ${{ needs.dev-deploy.outputs.APP_INGRESS_HOST }}
         run: |
-          echo "Application URL: http://${{ env.APP_INGRESS_HOST }}"
+          echo "Application URL: http://$APP_INGRESS_HOST"
           echo "--------------------------------------"
-          curl https://${{ env.APP_INGRESS_HOST }}/live -s -k | jq -r .status | grep -i live
+          curl https://$APP_INGRESS_HOST/live -s -k | jq -r .status | grep -i live
 
   prod-deploy:
     name: Prod Deploy
@@ -246,6 +250,6 @@ jobs:
         env:
           APP_INGRESS_HOST: ${{ needs.prod-deploy.outputs.APP_INGRESS_HOST }}
         run: |
-          echo "Application URL: http://${{ env.APP_INGRESS_HOST }}"
+          echo "Application URL: http://$APP_INGRESS_HOST"
           echo "--------------------------------------"
-          curl https://${{ env.APP_INGRESS_HOST }}/live -s -k | jq -r .status | grep -i live
+          curl https://$APP_INGRESS_HOST/live -s -k | jq -r .status | grep -i live
