@@ -81,12 +81,14 @@ jobs:
               INGRESS_IP: ${{ env.INGRESS_IP }}
 
           - name: Create MongoDB Secret in AKS
+            env:
+                MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
             run: |
               kubectl create namespace ${{ vars.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
               kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
                 --from-literal=mongo-uri='${{ inputs.MONGO_URI }}' \
                 --from-literal=mongo-username='${{ vars.MONGO_USERNAME }}' \
-                --from-literal=mongo-password='${{ secrets.MONGO_PASSWORD }}' \
+                --from-literal=mongo-password='$MONGO_PASSWORD' \
                 --dry-run=client -o yaml | kubectl apply -f -
         
           - name: Deploy to AKS
