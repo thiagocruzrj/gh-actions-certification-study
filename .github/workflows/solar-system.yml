@@ -137,6 +137,7 @@ jobs:
               --pattern *.xml
         env:
           AZURE_STORAGE_KEY: ${{ secrets.STORAGE_ACCOUNT_KEY }}
+  
   docker-build-and-push:
     name: Docker Build and Push to ACR
     needs: [unit-testing, code-coverage]
@@ -148,10 +149,14 @@ jobs:
     steps:
       - name: Azure login
         uses: azure/docker-login@v2
+        env:
+          REGISTRY_LOGIN_SERVER: ${{ env.REGISTRY_LOGIN_SERVER }}
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         with:
-          login-server: ${{ env.REGISTRY_LOGIN_SERVER }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+          login-server: $REGISTRY_LOGIN_SERVER
+          username: $REGISTRY_USERNAME
+          password: $REGISTRY_PASSWORD
 
       - name: GHCR login
         uses: docker/login-action@v2
@@ -168,12 +173,15 @@ jobs:
             file: Dockerfile
       
       - name: Docker Image Test
+        env:
+          MONGO_USERNAME: ${{ env.MONGO_USERNAME }}
+          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
         run: |
           docker images
           docker run --name solar-system-app -d -p 3000:3000 \
             -e MONGO_URI=${{ env.MONGO_URI }} \
-            -e MONGO_USERNAME=${{ env.MONGO_USERNAME }} \
-            -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
+            -e MONGO_USERNAME=$MONGO_USERNAME \
+            -e MONGO_PASSWORD=$MONGO_PASSWORD \
             ${{ env.REGISTRY_LOGIN_SERVER }}/solar-system:${{ github.sha }}
 
           echo "Testing Image URL using wget"

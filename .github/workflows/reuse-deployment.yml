@@ -39,8 +39,8 @@ jobs:
 
           - name: Azure login
             uses: azure/login@v1
-            with:
-              creds: ${{ secrets.AZURE_CREDENTIALS }}
+            env:
+                AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
         
           - name: Install Kubectl CLI
             uses: azure/setup-kubectl@v3
@@ -81,12 +81,15 @@ jobs:
               INGRESS_IP: ${{ env.INGRESS_IP }}
 
           - name: Create MongoDB Secret in AKS
+            env:
+              MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
+              MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
             run: |
               kubectl create namespace ${{ vars.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
               kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
                 --from-literal=mongo-uri='${{ inputs.MONGO_URI }}' \
-                --from-literal=mongo-username='${{ vars.MONGO_USERNAME }}' \
-                --from-literal=mongo-password='${{ secrets.MONGO_PASSWORD }}' \
+                --from-literal=mongo-username=$MONGO_USERNAME \
+                --from-literal=mongo-password=$MONGO_PASSWORD' \
                 --dry-run=client -o yaml | kubectl apply -f -
         
           - name: Deploy to AKS
